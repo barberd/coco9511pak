@@ -67,7 +67,7 @@ For example, to perform a float multiply:
 		DECB
 		BNE	loop2
 		LDA	#$12			Load in FMUL instruction
-		STA	$FF71			and sent to chip's command register
+		STA	$FF71			and send to chip's command register
 		;
 		;
 		; The software/CPU can now go off to do other things while the
