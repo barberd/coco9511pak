@@ -14,7 +14,7 @@ A software patch for the Color Computer 3's BASIC can be found in the [Basic Pat
 
 ## How to order for fabrication
 
-Download [kicad/coco9511pak-fabrication.zip](coco9511pak-fabrication.zip), then upload it to your PCB manufacturer of choice when asked to provide Gerber files. Usually this is found under a 'Quote' option on the website. Search "pcb manufacturing" on any major search engine to get several manufacturers.
+Download [kicad/coco9511pak-fabrication.zip](kicad/coco9511pak-fabrication.zip), then upload it to your PCB manufacturer of choice when asked to provide Gerber files. Usually this is found under a 'Quote' option on the website. Search "pcb manufacturing" on any major search engine to get several manufacturers.
 
 Some may have ordered boards and have extra available. Reach out to don &#x40; dgb3.net to explore this.
 
