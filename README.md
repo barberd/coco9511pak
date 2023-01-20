@@ -67,7 +67,7 @@ For example, to perform a float multiply:
 		LDA	#$12			Load in FMUL instruction
 		STA	$FF71			and sent to chip's command register
 	loop3	LDA	$FF71			Read from status register into latch
-					;CPU will halt here until data is read
+		;CPU will halt here until data is read
 		LDA	$FF72			Now read from latch
 		BMI	loop3			If bit 7 (Busy) is high, then loop
 		LDB	#4
@@ -80,7 +80,7 @@ For example, to perform a float multiply:
 
 ## Implementation Details
 
-Interfacing the AM9511 to the Color Computer is tricky. The AM9511 has a long read time; even on the fastest 4Mhz AM9511-4DC the time can range from 925ns to 1575ns. The standard AM9511, assuming its running at its fastest 2Mhz, can take from 1730ns to 2840ns. A standard Color Computer running at .89 Mhz has a clock cycle of 1117ns, with the needed lines only valid for about 800ns of that. On a Color Computer 3 with the double speed poke, this becomes only 400ns. As such, the AM9511 read time is longer than the CoCo listens for a response.
+Interfacing the AM9511 to the Color Computer is tricky. The AM9511 has a long read time; even on the fastest 4Mhz AM9511-4DC the time can range from 925ns to 1575ns. The standard AM9511, assuming its running at its fastest 2Mhz, can take from 1730ns to 2840ns. A standard Color Computer running at .89 Mhz has a clock cycle of 1117ns, with the needed lines only valid for about 800ns of that. On a Color Computer 3 with the double speed poke, this becomes only 400ns. As such, the AM9511 read time takes longer than the CoCo listens for a response.
 
 This problem of the AM9511 read time taking longer than a CPU clock cycle is not unique to the Color Computer (a CPU would have to be running at about 0.3Mhz to ensure an AM9511 read fits into a clock cycle, and CPUs were already faster than this when it came out). To account for this, many 8 bit CPUs either have a READY line available for peripherals to hold the CPU in the middle of an instruction (the 8080, Z80, and 6502 CPUs for example), or there is another way to pause the CPU's clock (using a 6871A clock chip with a 6800 for example). However, neither is available on the Color Computer, at least not without hardware modification.
 
