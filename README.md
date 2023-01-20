@@ -41,35 +41,35 @@ $FF71 Command Register (Write) and Status Register (Read)
 $FF72 Latch Register (Read)
 $FF73 Mirror of Latch Register
 
-Read the [AM9511 Datasheet](docs/9511 Datasheet.pdf), [Algorithm Details for the Am9511 Arithmetic Processing Unit](docs/The Am9511 Arithmetic Processing Unit.pdf), and the [Am9511A/Am9512 Floating Point Processor Manual](docs/Am9511A-9512FP_Processor_Manual.pdf) for how to use the chip. The only adjustment for this board is that instead of reading directly from the chip, a two-step read is needed. The first will read the data into a latch, and a second read will load the real data into the CPU. See the Implementation Details below for information on why this is needed.
+Read the [AM9511 Datasheet](docs/9511%20Datasheet.pdf), [Algorithm Details for the Am9511 Arithmetic Processing Unit](docs/The%20Am9511%20Arithmetic%20Processing%20Unit.pdf), and the [Am9511A/Am9512 Floating Point Processor Manual](docs/Am9511A-9512FP_Processor_Manual.pdf) for how to use the chip. The only adjustment for this board is that instead of reading directly from the chip, a two-step read is needed. The first will read the data into a latch, and a second read will load the real data into the CPU. See the Implementation Details below for information on why this is needed.
 
 For example, to perform a float multiply:
 
-	LDX	#fpbuf1			Floating Point Buffer 1
-	LDY	#fpbuf2			Floating Point Buffer 2
-	LDY	#result			Result Buffer
-	LDB	#4
-loop1	LDA	,X+			Store Buffer 1 contents into chip
-	STA	$FF70
-	DECB
-	BNE	loop1	
-	LDB	#4
-loop2	LDA	,Y+			Store Buffer 2 contents into chip
-	STA	$FF70
-	DECB
-	BNE	loop2
-	LDA	#$12			Load in FMUL instruction
-	STA	$FF71			and sent to chip's command register
-loop3	LDA	$FF71			Read from status register into latch
+	 	LDX	#fpbuf1			Floating Point Buffer 1
+		LDY	#fpbuf2			Floating Point Buffer 2
+		LDY	#result			Result Buffer
+		LDB	#4
+	loop1	LDA	,X+			Store Buffer 1 contents into chip
+		STA	$FF70
+		DECB
+		BNE	loop1	
+		LDB	#4
+	loop2	LDA	,Y+			Store Buffer 2 contents into chip
+		STA	$FF70
+		DECB
+		BNE	loop2
+		LDA	#$12			Load in FMUL instruction
+		STA	$FF71			and sent to chip's command register
+	loop3	LDA	$FF71			Read from status register into latch
 					;CPU will halt here until data is read
-	LDA	$FF72			Now read from latch
-	BMI	loop3			If bit 7 (Busy) is high, then loop
-	LDB	#4
-loop4	LDA	$FF70			Read result into latch
-	LDA	$FF72			Read from latch
-	STA	,U+			Store into result buffer
-	DECB
-	BNE	loop4
+		LDA	$FF72			Now read from latch
+		BMI	loop3			If bit 7 (Busy) is high, then loop
+		LDB	#4
+	loop4	LDA	$FF70			Read result into latch
+		LDA	$FF72			Read from latch
+		STA	,U+			Store into result buffer
+		DECB
+		BNE	loop4
 	
 
 ## Implementation Details
@@ -136,15 +136,15 @@ For C16 and R2, if you don't have these exact values on hand, one can use a larg
 
 Links:
 
-* [Older Datasheet including command details](docs/Am9511 Arithmetic Processor.pdf)
+* [Older Datasheet including command details](docs/Am9511%20Arithmetic%20Processor.pdf)
 * [New Datasheet with AM9511-4 timings](docs/9511%20Datasheet.pdf)
-* [Algorithm Details](docs/The Am9511 Arithmetic Processing Unit.pdf)
+* [Algorithm Details](docs/The%20Am9511%20Arithmetic%20Processing Unit.pdf)
 * [Am9511/Am9512 Processor Manual](Am9511A-9512FP_Processor_Manual.pdf) Includes schematics for interfacing to various processors including 8080, Z80, 6800, etc.
 * [Color Computer Technical Reference](https://colorcomputerarchive.com/repo/Documents/Manuals/Hardware/Color%20Computer%20Technical%20Reference%20Manual%20%28Tandy%29.pdf) See Page 18 of the manual/25 of the PDF for bus timings.
 
 ## How to order for fabrication
 
-Download [kicad/coco9511pak-fabrication.zip], then upload it to your PCB manufacturer of choice when asked to provide Gerber files. Usually this is found under a 'Quote' option on the website. Search "pcb manufacturing" on any major search engine to get several manufacturers.
+Download [kicad/coco9511pak-fabrication.zip](coco9511pak-fabrication.zip), then upload it to your PCB manufacturer of choice when asked to provide Gerber files. Usually this is found under a 'Quote' option on the website. Search "pcb manufacturing" on any major search engine to get several manufacturers.
 
 Some may have ordered boards and have extra available. Reach out to don &#x40; dgb3.net to explore this.
 
