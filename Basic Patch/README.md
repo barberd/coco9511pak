@@ -19,7 +19,7 @@ This will load the patch.
 
 ## Source and License
 
-Source maintained at [https://github.com/barberd/coco9511pak/Basic Patch](https://github.com/barberd/coco9511pak/Basic%20Patch).
+Source maintained at [https://github.com/barberd/coco9511pak/](https://github.com/barberd/coco9511pak/).
 
 The code is copyright 2023 by Don Barber. The software is open source, distributed via the GNU GPL version 3 license. Please see the COPYING file for details.
 
