@@ -1,8 +1,10 @@
-# CoCo AM9511 Pak
+# CoCo Am9511 Pak
 
 ## Description
 
 This board is a cartridge for the Tandy Radio Shack TRS-80 Color Computer (CoCo), an 8 bit computer produced between 1980 and 1991. It provides an Arithmetic Processor Unit (APU), the AMD 9511, to the CoCo.
+
+![Front View](images/coco9511pak.png?raw=true)
 
 Note the specific component values for C16, R2, and X1 on the board's markings and the bill of materials is for the AM9511-4DC; see below if you have a different chip.
 
