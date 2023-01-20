@@ -42,10 +42,10 @@ Set the 6 dip switches (SW1) for the desired base IO address. These correspond t
 
 The four addresses used correspond to different registers on the Am9511 and board. For example, if given base address of $FF70:
 
-  $FF70 Data Register (Read and Write)
-  $FF71 Command Register (Write) and Status Register (Read)
-  $FF72 Latch Register (Read)
-  $FF73 Mirror of Latch Register
+  * $FF70 Data Register (Read and Write)
+  * $FF71 Command Register (Write) and Status Register (Read)
+  * $FF72 Latch Register (Read)
+  * $FF73 Mirror of Latch Register
 
 Read the [AM9511 Datasheet](docs/9511%20Datasheet.pdf), [Algorithm Details for the Am9511 Arithmetic Processing Unit](docs/The%20Am9511%20Arithmetic%20Processing%20Unit.pdf), and the [Am9511A/Am9512 Floating Point Processor Manual](docs/Am9511A-9512FP_Processor_Manual.pdf) for how to use the chip. The only adjustment for this board is that instead of reading directly from the chip, a two-step read is needed. The first will read the data into a latch, and a second read will load the real data into the CPU. See the Implementation Details below for information on why this is needed.
 
