@@ -122,7 +122,7 @@ Additionally, when doing a write, the Am9511-4 and Am9511-1 needs the write line
 
 ### But I don't want to HALT the CPU during a read!
 
-A jumper is included on the board design so the HALT behavior can be disabled. If disabled, then the programmer will need to account for the time it takes for chip transfer to complete in software instead by calculating software instruction timing. 
+A jumper is included on the board design so the HALT behavior can be disabled. If disabled, then the programmer will need to account for the time it takes for chip transfer to complete instead by calculating software instruction timing. 
 
 On a 6809 CoCo running at .89 Mhz this is not an issue and the jumper can be removed to disable the HALT behavior; a LD instruction takes three cycles so the time for the two intervening clock cycles between the load cycles of the LD instructions is greater than the required 2840 ns.
 
