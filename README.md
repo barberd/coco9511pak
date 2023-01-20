@@ -131,7 +131,7 @@ Here are a few examples:
 
 * [S100Computers.com Math Board](http://s100computers.com/My%20System%20Pages/Math%20Board/Math%20Board.htm) This one controls only the C/D line with a PIA, but otherwise is a fairly standard implementation using the 8080/Z80's READY line.
 
-* [Micro! Aug 1981 MICROCRUNCH: An Ultra-fast Arithmetic Computing System](https://archive.org/details/sim_micro_1981-08_39/page/n7), Page 7. This one uses the two flip-flops in a 74LS76 chip to control the R/W\* and C/D\* lines. Part 2 is in [Micro! Sep 1981](https://archive.org/details/sim_micro_1981-09_40/page/82/mode/2up), Page 83. This one uses a 74123 for writing timing much like this board.
+* [Micro! Aug 1981 MICROCRUNCH: An Ultra-fast Arithmetic Computing System](https://archive.org/details/sim_micro_1981-08_39/page/n7), Page 7. This one uses the two flip-flops in a 74LS76 chip like a PIA to control the R/W\* and C/D\* lines. Part 2 is in [Micro! Sep 1981](https://archive.org/details/sim_micro_1981-09_40/page/82/mode/2up), Page 83. This one uses a 74123 for writing timing much like this board.
 
 ## Chip Considerations
 
