@@ -38,7 +38,7 @@ The APU may also be referred to as a floating-point unit (FPU) or a math coproce
 
 ## Using the Board
 
-Set the 6 dip switches (SW1) for the desired base IO address. These correspond to address lines A2 through A7. The default is $FF70 (switches set to 011100), which generally should not have a conflict unless you have a Glenside IDE Controller using its second jumper option. See [here](https://www.cocopedia.com/wiki/index.php/External_Hardware_IO_Address_Map) for choosing an IO address.
+Set the 6 dip switches (SW1) for the desired base IO address. These correspond to address lines A2 through A7. The default is $FF70 (switches set to 011100), which generally should not have a conflict unless you have configured another hardware device with a conflicting IO address. See [here](https://www.cocopedia.com/wiki/index.php/External_Hardware_IO_Address_Map) for a list of known IO hardware addresses.
 
 The four addresses used correspond to different registers on the Am9511 and board. For example, if given base address of $FF70:
 
