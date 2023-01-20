@@ -5,7 +5,7 @@
 ; This code will patch Super Extended Basic to use the AMD 9511 
 ; Arithmetic Processing Unit for several of its float functions, including: 
 ; *, /, ^, SIN, ATN, COS, TAN, EXP, FIX, LOG, and SQR.
-; Additionally, four new functions have been added: ACOS, ARCSIN, LG10, and PI.
+; Additionally, four new functions have been added: ACOS, ARCSIN, LG10, and APUPI.
 
 ; A CoCo 9511 Pak is required; see the distribution ; URL above for 
 ; the hardware design files.
@@ -319,7 +319,7 @@ start:
 		;replace 'expjmp' destination to new AM9511 function
 		LDD	#PWR
 		STD	$011E
-		;replace extended basic jump table entires for functions
+		;replace extended basic jump table entries for functions
 		LDX	#$8257
 		LDD	#ATAN
 		STD	,X++
