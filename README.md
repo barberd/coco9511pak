@@ -156,7 +156,7 @@ Links:
 * [Older Datasheet including command details](docs/Am9511%20Arithmetic%20Processor.pdf?raw=true)
 * [New Datasheet with AM9511-4 timings](docs/9511%20Datasheet.pdf?raw=true)
 * [Algorithm Details](docs/The%20Am9511%20Arithmetic%20Processing%20Unit.pdf?raw=true)
-* [Am9511/Am9512 Processor Manual](Am9511A-9512FP_Processor_Manual.pdf?raw=true) Includes schematics for interfacing to various processors including 8080, Z80, 6800, etc.
+* [Am9511/Am9512 Processor Manual](docs/Am9511A-9512FP_Processor_Manual.pdf?raw=true) Includes schematics for interfacing to various processors including 8080, Z80, 6800, etc.
 * [Color Computer Technical Reference](https://colorcomputerarchive.com/repo/Documents/Manuals/Hardware/Color%20Computer%20Technical%20Reference%20Manual%20%28Tandy%29.pdf) See Page 18 of the manual/25 of the PDF for bus timings.
 
 ## Errata
