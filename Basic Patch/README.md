@@ -45,7 +45,7 @@ Use of a number in BASIC that does not fit within the Am9511's range results in 
 
 ## Implementation Choices
 
-The basic IO address for accessing the Am9511 is $FF70. If a different IO address is desired, the patch will need to be modified and reassembled.
+The base IO address for accessing the Am9511 is $FF70. If a different IO address is desired, the patch will need to be modified and reassembled.
 
 ARCSIN was used for arcsin instead of ASIN as this conflicts with the 'AS' token used in Disk BASIC.
 
@@ -69,5 +69,5 @@ Make CoCo 1 and CoCo 2 patches.
 
 Modify the entire BASIC ROM so the APU floating point format is used internal to BASIC, so conversion to and from the APU is not needed.
 
-Do some tests to see if it also makes sense to perform additional and subtraction on the AM9511. Assumption is that multi-byte additional and subtraction in software is faster when including the overhead required in communicating with the Am9511.
+Do some tests to see if it also makes sense to perform addition and subtraction on the Am9511. Assumption is that multi-byte addition and subtraction in software is still faster when including the overhead required in communicating with the Am9511, as this is generally the case on other machines, but this has not been tested empirically.
 
