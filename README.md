@@ -72,6 +72,7 @@ For example, to perform a float multiply:
 		BMI	loop3			If bit 7 (Busy) is high, then loop
 		LDB	#4
 	loop4	LDA	$FF70			Read result into latch
+		;CPU will halt here until data is read
 		LDA	$FF72			Read from latch
 		STA	,U+			Store into result buffer
 		DECB
@@ -99,6 +100,7 @@ For example, to load pi onto the AM9511's data stack followed by a check of the 
 		LDX	#outputbuffer
 		LDB	#4
 	loop	LDA	$FF70	Read from data register into latch
+		;CPU will halt here until data is read
 		LDA	$FF72	Then read the real data	
 		STA	,X+	And store it into the buffer
 		DECB
