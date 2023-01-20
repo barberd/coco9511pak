@@ -10,6 +10,12 @@ Schematic is available [here](kicad/coco9511pak.pdf).
 
 A software patch for the Color Computer 3's BASIC can be found in the [Basic Patch](Basic%20Patch/) directory.
 
+## How to order for fabrication
+
+Download [kicad/coco9511pak-fabrication.zip](coco9511pak-fabrication.zip), then upload it to your PCB manufacturer of choice when asked to provide Gerber files. Usually this is found under a 'Quote' option on the website. Search "pcb manufacturing" on any major search engine to get several manufacturers.
+
+Some may have ordered boards and have extra available. Reach out to don &#x40; dgb3.net to explore this.
+
 ## Source and License
 
 Design maintained at [https://github.com/barberd/coco9511pak](https://github.com/barberd/coco9511pak). [Kicad](https://www.kicad.org/) and [Freerouting](https://github.com/freerouting/freerouting/) were used to design the board.
@@ -36,10 +42,10 @@ Set the 6 dip switches (SW1) for the desired base IO address. These correspond t
 
 The four addresses used correspond to different registers on the Am9511 and board. For example, if given base address of $FF70:
 
-$FF70 Data Register (Read and Write)
-$FF71 Command Register (Write) and Status Register (Read)
-$FF72 Latch Register (Read)
-$FF73 Mirror of Latch Register
+  $FF70 Data Register (Read and Write)
+  $FF71 Command Register (Write) and Status Register (Read)
+  $FF72 Latch Register (Read)
+  $FF73 Mirror of Latch Register
 
 Read the [AM9511 Datasheet](docs/9511%20Datasheet.pdf), [Algorithm Details for the Am9511 Arithmetic Processing Unit](docs/The%20Am9511%20Arithmetic%20Processing%20Unit.pdf), and the [Am9511A/Am9512 Floating Point Processor Manual](docs/Am9511A-9512FP_Processor_Manual.pdf) for how to use the chip. The only adjustment for this board is that instead of reading directly from the chip, a two-step read is needed. The first will read the data into a latch, and a second read will load the real data into the CPU. See the Implementation Details below for information on why this is needed.
 
@@ -82,13 +88,22 @@ As such, this pak uses a 74ls374 latch register at a third IO address to store r
 
 For example, to load pi onto the AM9511's data stack followed by a check of the status register:
 
-	LDA	#$1A	Command the am9511 to load pi
-	STA	$FF71	Store into the command register
-	LDA	$FF71	Load the status register into the latch register
-	; CPU halts here until the data is loaded into the latch
-	; The above 'LDA' pulls in junk data, just ignore it and use the below
-	; 'LDA' to pull in the real data
-	LDA	$FF72	Load the actual result from the latch register into CPU 'A' register
+	 	LDA	#$1A	Command the am9511 to load pi
+		STA	$FF71	Store into the command register
+		LDA	$FF71	Load the status register into the latch register
+		; CPU halts here until the data is loaded into the latch
+		; The above 'LDA' pulls in junk data, just ignore it and use the below
+		; 'LDA' to pull in the real data
+		LDA	$FF72	Load the actual status result from the latch register into CPU 'A' register
+		; Now go on to load the data out of the data registers
+		LDX	#outputbuffer
+		LDB	#4
+	loop	LDA	$FF70	Read from data register into latch
+		LDA	$FF72	Then read the real data	
+		STA	,X+	And store it into the buffer
+		DECB
+		BNE	loop
+
 
 This 'two instructions to read' method may not be the most elegant for those used to programming the AM9511 on an 8080, but was necessary due to the timing considerations discussed above. An alternative, if one wants to design their own board, is to use a PIA, discussed below.
 
@@ -138,15 +153,9 @@ Links:
 
 * [Older Datasheet including command details](docs/Am9511%20Arithmetic%20Processor.pdf)
 * [New Datasheet with AM9511-4 timings](docs/9511%20Datasheet.pdf)
-* [Algorithm Details](docs/The%20Am9511%20Arithmetic%20Processing Unit.pdf)
+* [Algorithm Details](docs/The%20Am9511%20Arithmetic%20Processing%20Unit.pdf)
 * [Am9511/Am9512 Processor Manual](Am9511A-9512FP_Processor_Manual.pdf) Includes schematics for interfacing to various processors including 8080, Z80, 6800, etc.
 * [Color Computer Technical Reference](https://colorcomputerarchive.com/repo/Documents/Manuals/Hardware/Color%20Computer%20Technical%20Reference%20Manual%20%28Tandy%29.pdf) See Page 18 of the manual/25 of the PDF for bus timings.
-
-## How to order for fabrication
-
-Download [kicad/coco9511pak-fabrication.zip](coco9511pak-fabrication.zip), then upload it to your PCB manufacturer of choice when asked to provide Gerber files. Usually this is found under a 'Quote' option on the website. Search "pcb manufacturing" on any major search engine to get several manufacturers.
-
-Some may have ordered boards and have extra available. Reach out to don &#x40; dgb3.net to explore this.
 
 ## Errata
 
