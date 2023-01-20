@@ -68,6 +68,14 @@ For example, to perform a float multiply:
 		BNE	loop2
 		LDA	#$12			Load in FMUL instruction
 		STA	$FF71			and sent to chip's command register
+		;
+		;
+		; The software/CPU can now go off to do other things while the
+		; APU performs this command. FMUL can take up to 168 cycles.
+		; Or one can continue straight to the status check loop and 
+		; wait for the APU to finish.
+		;
+		;
 	loop3	LDA	$FF71			Read from status register into latch
 		;CPU will halt here until data is read
 		LDA	$FF72			Now read from latch
