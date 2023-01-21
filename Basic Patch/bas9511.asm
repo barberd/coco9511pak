@@ -176,7 +176,7 @@ apuerrorhandler:
 		;so just round down to 0 and return
 		LDX	#FP0EXP
 		LDA	#5
-errzeroloop:	CLR	,X+		Clear all bytes if exp=0
+errzeroloop:	CLR	,X+
 		DECA
 		BNE	errzeroloop
 		RTS
