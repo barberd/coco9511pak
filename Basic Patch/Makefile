@@ -9,6 +9,7 @@ clean:
 $(TARGET): diskgen $(BINFILE)
 	decb copy $(BINFILE) $(TARGET),$(BINFILE) -2 -b
 	decb copy ../COPYING $(TARGET),COPYING -1 -a
+	decb copy -t FPBENCH.BAS $(TARGET),FPBENCH.BAS -0 -b
 
 diskgen:
 	decb dskini $(TARGET)
