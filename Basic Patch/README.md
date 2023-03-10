@@ -45,7 +45,7 @@ Use of a number in BASIC that does not fit within the Am9511's range results in 
 
 ## Benchmarking
 
-The included FPBENCH.BAS file will loop over several floating point calculations (Y=(TAN(ATN(SQR(Y\*Y)))+1)/Y) and prints how much time it took. The benchmark uses the TIMER function of Extended Basic, so one might get a bad result if the timer overflows during the test, which happens every 18 minutes and 12 seconds...so just run it again if one gets a negative result. Also, the result will slightly inaccurate because keyboard IO, joystick IO, and the Am9511 Pak's use of the HALT line may block the interrupt handler used for the timer, but this does not usually result in a significant difference.
+The included FPBENCH.BAS file will loop over several floating point calculations (Y=(TAN(ATN(SQR(Y\*Y)))+1)/Y) and prints how much time it took. The benchmark uses the TIMER function of Extended Basic, so one might get a bad result if the timer overflows during the test, which happens every 18 minutes and 12 seconds...so just run it again if one gets a negative result. Also, the result is slightly inaccurate because keyboard IO, joystick IO, and the Am9511 Pak's use of the HALT line may block the interrupt handler used for the timer, but this does not usually result in a significant difference.
 
 Here are the results when I run them:
 
