@@ -68,10 +68,12 @@ UNPACKEDTOAPU
 		PSHS	A
 		TST	,X
 		BNE	notzero
-makezero:	LDA	#5
+makezero:	PSHS	X
+		LDA	#5
 zeroloop:	CLR	,X+		Clear all bytes if exp=0
 		DECA
 		BNE	zeroloop
+		PULS	X
 		BRA	storeinapu
 notzero:
 		;check if 4th byte bit 7 is 0, then truncate (round down)
@@ -115,13 +117,14 @@ notunderflow
 		RORA			rotate into mantissa sign
 		STA	,X		and store
 		;now store into APU
-storeinapu:	LDB	#4
-storeloop:	LDA	,X+
+storeinapu:	
+		LEAX	4,X
+		LDB	#4
+storeloop:	LDA	,-X
 		STA	APUDR
 		DECB
 		BNE	storeloop
 		PULS	A,PC
-
 
 APUCOMMAND	STA	APUCR
 		#JMP	skip			for debugging, bypass chip
@@ -294,6 +297,14 @@ amjumptable:	FDB	ACOS		AE
 		FDB	LOG10		B0
 		FDB	PI		B1
 
+var99		FCB	$94,$74,$23,$fe,$67
+var9		FCB	$98,$18,$96,$7f,$00
+var1e7		FCB	$98,$18,$96,$80,$00
+
+;bdb6 to 947423fe67  (999,999.9)
+;bdbb to 981896 7f00 (9,999,999)
+;bdc0 to 981896 8000 (1E+07)
+
 start:
 		STA	$FFDF		make sure coco3 is in RAM mode
 
@@ -333,9 +344,36 @@ start:
 		STD	,X++
 		LDD	#LOG
 		STD	,X++
+		LEAX	2,X		skip over POS
 		LDD	#SQR
 		STD	,X
 
+		#JMP	skipdisplaypatches
+
+;make changes to only show 7 significant digits when converting FP to string
+;changing references in color basic to new location instead of updating
+;location itself so that PRINT USING in extended basic still works correctly
+;bdb6 to 947423fe67  (999,999.9)
+		LDD	#var99
+		STD	$BE0A
+;bdbb to 981896 7f00 (9,999,999)
+		LDD	#var9
+		STD	$BE02
+;bdc0 to 981896 8000 (1E+07)
+		LDD	#var1e7
+		STD	$BDF8
+
+;bdfe to f9
+		LDA	#$F9
+		STA	$BDFE
+;be2a to 08
+		LDA	#$08
+		STA	$BE2A
+;be4d to cd
+		LDA	#$CD
+		STA	$BE4D
+
+skipdisplaypatches:
 		;set new basic location to start at this code's initialization
 		;routine since thats no longer needed
 		LDX	#start+1
