@@ -43,6 +43,19 @@ So, the native software format provides more precision and greater range, but is
 
 Use of a number in BASIC that does not fit within the Am9511's range results in an OV (overflow) error when sending an operation to the Am9511. Time is also spent in converting values between systems when writing to or reading from the Am9511, but this overhead is dwarfed by the time saved by the APU processing.
 
+## Benchmarking
+
+The included FPBENCH.BAS file will loop over several floating point calculations (Y=(TAN(ATN(SQR(Y\*Y)))+1)/Y) and prints how much time it took. The benchmark uses the TIMER function of Extended Basic, so one might get a bad result if the timer overflows at 65536 during the test. Also, TIMER might be off slightly due to IO and the Am9511 Pak's use of the HALT line. But it works pretty well as a general order-of-magnitude benchmark.
+
+Here are the results when I run them:
+
+ * Stock CoCo3: 66.08 seconds
+ * CoCo3 with "Poke 65497,0" double speed poke: 32.86 seconds
+ * CoCo3 with Am9511-4 and Basic Patches: 5.95 seconds
+ * CoCo3 with Am9511-4, Basic Patches, and Double Speek Poke: 3.5 seconds
+
+As such, one can expect a 10x performance increase in floating point operatings using this Basic patch.
+
 ## Implementation Choices
 
 The base IO address for accessing the Am9511 is $FF70. If a different IO address is desired, the patch will need to be modified and reassembled.
