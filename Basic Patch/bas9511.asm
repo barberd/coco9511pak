@@ -7,7 +7,7 @@
 ; *, /, ^, SIN, ATN, COS, TAN, EXP, FIX, LOG, and SQR.
 ; Additionally, four new functions have been added: ACOS, ARCSIN, LG10, and APUPI.
 
-; A CoCo 9511 Pak is required; see the distribution ; URL above for 
+; A CoCo 9511 Pak is required; see the distribution URL above for 
 ; the hardware design files.
 
 ; This patch is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -33,8 +33,8 @@
 ;  7 bit exponent - unbiased 2's complement
 ;  24 bits mantissa
 
-APUDR           EQU     $FF70           AM9511A Data Register   - store in APURR
-APUSR           EQU     $FF71           AM9511A Status Register - store in APURR
+APUDR           EQU     $FF70           AM9511A Data Register   - loads stored in APURR
+APUSR           EQU     $FF71           AM9511A Status Register - loads stored in APURR
 APUCR           EQU     APUSR           AM9511A Command Register
 APURR		EQU	$FF72		Real read register
 
@@ -137,7 +137,7 @@ apuwaitloop:	LDA	APUSR
 		BMI	apuwaitloop		loop until done
 		BITA	#$1E
 		BNE	apuerrorhandler
-;now down with command so 
+;now done with command so 
 ;pull float out of APU and format to FPA
 		LDB	#4
 		LDX	#FP0EXP	
