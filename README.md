@@ -6,7 +6,7 @@ This board is a cartridge for the Tandy Radio Shack TRS-80 Color Computer (CoCo)
 
 ![Front View](images/coco9511pak.png?raw=true)
 
-Note the specific component values for C16, R2, and X1 on the board's markings and the bill of materials is for the Am9511-4DC; see below if you have a different chip.
+Note the specific component value for X1 on the board's markings and the bill of materials is for the Am9511-4DC; see below if one has a different chip.
 
 Schematic is available [here](kicad/coco9511pak.pdf).
 
@@ -14,11 +14,11 @@ A software patch for the Color Computer 3's BASIC can be found in the [Basic Pat
 
 ## How to order for fabrication
 
-DO NOT ORDER THE CURRENT DESIGN. Bugs are still being worked out. Contact me for details.
-
-Download [kicad/coco9511pak-fabrication.zip](kicad/coco9511pak-fabrication.zip), then upload it to your PCB manufacturer of choice when asked to provide Gerber files. Usually this is found under a 'Quote' option on the website. Search "pcb manufacturing" on any major search engine to get several manufacturers.
+Download [kicad/coco9511pak-fabrication.zip](kicad/coco9511pak-fabrication.zip), then upload it to one's PCB manufacturer when asked to provide Gerber files. Usually this is found under a 'Quote' option on the website. Search "pcb manufacturing" on any major search engine to get several manufacturers. NextPCB and PCBWay are two well-known ones.
 
 Some may have ordered boards and have extra available. Reach out to don &#x40; dgb3.net to explore this.
+
+Use the [Bill of Materials](kicad/coco9511pak.csv) to source the components from electronic supply houses such as Mouser, Jameco, or Digi-Key.
 
 ## Source and License
 
@@ -30,9 +30,18 @@ The design is copyright 2023 by Don Barber. The design is open source, distribut
 
 The Am9511 chip provides 16 bit and 32 bit fixed point and 32 bit floating point arithmetic, including ADD, SUB, MUL, DIV, SIN, COS, TAN, ASIN, ACOS, ATAN, EXP, PWR, SQRT, LN, and supporting functions (such as fixed to float conversions). Such functions are often slower for 8 bit processors to calculate, so developers can offload such processing to the Am9511, where it can be done faster. Additionally, the main CPU may continue to do other activities while the APU works in parallel.
 
-For example, a hardware floating point divide can take up to 184 clock cycles (92,000 nanoseconds at 2 Mhz) on the Am9511, but may take over 13,000 cycles (6.5 milliseconds or 6,500,000 nanoseconds at 2Mhz) using just the CPU using a floating point library, making the Am9511 about 70x faster even at the same clock rate. Additionally, a 4 Mhz clock can be used on the Am9511-4DC, making it even faster than many 8-bit CPUs.
+For example, a hardware floating point divide can take up to 184 clock cycles (92,000 nanoseconds at 2 Mhz) on the Am9511, but may take over 13,000 cycles (6,500,000 nanoseconds at 2 Mhz) using just the CPU, making floating point math on the Am9511 about 70x faster. Additionally, a 4 Mhz clock can be used on the Am9511-4DC, making it even faster.
 
-This is often used for technical or scientific uses where very fast arithmetic is desirable. For example, see [NASA Technical Memorandum TM-86517](https://archive.org/details/NASA_NTRS_Archive_19850026198/page/n1/mode/2up) from July 1985 for a description on how NASA used these chips for controlling structural vibrations, and needed all the computations done within 20ms. They actually put four Am9511s in parallel! (Note there is a bug in Figure 6 on page 15; the 'BCS BA4' should be 'BCC BA4'.)
+This is often used for technical or scientific uses where very fast arithmetic is desirable. For example, see [NASA Technical Memorandum TM-86517](https://archive.org/details/NASA_NTRS_Archive_19850026198/page/n1/mode/2up) from July 1985 for a description on how NASA used these chips for controlling structural vibrations, and needed all the computations done within 20ms. They actually put four Am9511s in parallel! (Note the 6502 processor used in that memo has the opposite BCC/BCS behavior compared to the 6809; keep this in mind when reviewing Figure 6 on page 15; the 'BCS BA4' should be 'BCC BA4' when transcoding to the CoCo.)
+
+A quick benchmark executing in [Basic](Basic%Patch/) that loops over Y=(TAN(ATN(SQR(Y\*Y)))+1)/Y 368 times gets these results:
+
+ * Stock CoCo3: 66.08 seconds
+ * CoCo3 with "Poke 65497,0" double speed poke: 32.86 seconds
+ * CoCo3 with Am9511-4 and Basic Patches: 5.95 seconds
+ * CoCo3 with Am9511-4, Basic Patches, and Double Speek Poke: 3.5 seconds
+
+So, use of the Am9511 results in about 10x speed in floating-point operations when compared to the algorithms in the built-in Basic ROM. Please note this is linear, as the CPU waits for the result while the Am9511 is processing. A program that does other work in parallel could see even faster results.
 
 ### More on the APU
 
@@ -42,7 +51,7 @@ The APU may also be referred to as a floating-point unit (FPU) or a math coproce
 
 ## Using the Board
 
-Set the 6 dip switches (SW1) for the desired base IO address. These correspond to address lines A2 through A7. The default is $FF70 (switches set to 011100), which generally should not have a conflict unless you have configured another hardware device with a conflicting IO address. See [here](https://www.cocopedia.com/wiki/index.php/External_Hardware_IO_Address_Map) for a list of known IO hardware addresses.
+Set the 6 dip switches (SW1) for the desired base IO address. These correspond to address lines A2 through A7. The default is $FF70 (switches set to 011100), which generally should not have a conflict unless one has configured another hardware device with a conflicting IO address. See [here](https://www.cocopedia.com/wiki/index.php/External_Hardware_IO_Address_Map) for a list of known IO hardware addresses.
 
 The four addresses used correspond to different registers on the Am9511 and board. For example, if given base address of $FF70:
 
@@ -55,16 +64,16 @@ Read the [Am9511 Datasheet](docs/9511%20Datasheet.pdf?raw=true), [Algorithm Deta
 
 For example, to perform a float multiply:
 
-	 	LDX	#fpbuf1			Floating Point Buffer 1
-		LDY	#fpbuf2			Floating Point Buffer 2
+	 	LDX	#fpbuf1+4		End of Floating Point Buffer 1
+		LDY	#fpbuf2+4		End of Floating Point Buffer 2
 		LDY	#result			Result Buffer
 		LDB	#4
-	loop1	LDA	,X+			Store Buffer 1 contents into chip
+	loop1	LDA	,-X			Push Buffer 1 contents into chip
 		STA	$FF70
 		DECB
 		BNE	loop1	
 		LDB	#4
-	loop2	LDA	,Y+			Store Buffer 2 contents into chip
+	loop2	LDA	,-Y			Push Buffer 2 contents into chip
 		STA	$FF70
 		DECB
 		BNE	loop2
@@ -83,7 +92,7 @@ For example, to perform a float multiply:
 		LDA	$FF72			Now read from latch
 		BMI	loop3			If bit 7 (Busy) is high, then loop
 		LDB	#4
-	loop4	LDA	$FF70			Read result into latch
+	loop4	LDA	$FF70			Pop result from chip into latch
 		;CPU will halt here until data is read
 		LDA	$FF72			Read from latch
 		STA	,U+			Store into result buffer
@@ -93,11 +102,11 @@ For example, to perform a float multiply:
 
 ## Implementation Details
 
-Interfacing the Am9511 to the Color Computer is tricky. The Am9511 has a long read time; even on the fastest 4Mhz Am9511-4DC the time can range from 925ns to 1575ns. The standard Am9511, assuming its running at its fastest 2Mhz, can take from 1730ns to 2840ns. A standard Color Computer running at .89 Mhz has a clock cycle of 1117ns, with the needed lines only valid for about 800ns of that. On a Color Computer 3 with the double speed poke, this becomes only 400ns. As such, the Am9511 read time takes longer than the CoCo listens for a response.
+Interfacing the Am9511 to the Color Computer is tricky. The Am9511 has a long read time; even on the fastest 4Mhz Am9511-4DC the time can range from 925ns to 1575ns. The standard Am9511, assuming its running at its fastest 2Mhz, can take from 1730 ns to 2840 ns. A standard Color Computer running at .89 Mhz has a clock cycle of 1117ns, with the needed lines only valid for 488ns of that. On a Color Computer 3 with the double speed poke, this becomes only 244ns. As such, the Am9511 read time takes longer than the CoCo listens for a response.
 
 This problem of the Am9511 read time taking longer than a CPU clock cycle is not unique to the Color Computer (a CPU would have to be running at about 0.3Mhz to ensure an Am9511 read fits into a clock cycle, and CPUs were already faster than this when it came out). To account for this, many 8 bit CPUs either have a READY line available for peripherals to hold the CPU in the middle of an instruction (the 8080, Z80, and 6502 CPUs for example), or there is another way to pause the CPU's clock (using a 6871A clock chip with a 6800 for example). However, neither is available on the Color Computer, at least not without hardware modification.
 
-As such, this pak uses a 74ls374 latch register at a third IO address to store read data coming from the Am9511. Software reading from the chip needs to perform two instructions: one to instruct the Am9511 to copy its data to that register, and another for the CPU to load from the register. The CPU HALT line is used to pause the CPU at the end of the first instruction until the transfer is complete, so the data is always ready in time for the second instruction.
+As such, this pak uses a 74LS374 latch register accessible at a third IO address to store read data coming from the Am9511. Software reading from the chip needs to perform two instructions: one to instruct the Am9511 to copy its data to that register, and another for the CPU to load from the register. The CPU HALT line is used to pause the CPU at the end of the first load instruction until the transfer is complete, so the data is always ready in time for the second instruction.
 
 For example, to check the status register:
 
@@ -107,7 +116,7 @@ For example, to check the status register:
 		; 'LDA' to pull in the real data
 		LDA	$FF72	Load the actual status result from the latch register into CPU 'A' register
 
-For another example, to pull 4 bytes of the Am9511's data register stack:
+For another example, to pull 4 bytes off the Am9511's data register stack:
 
 		LDX	#outputbuffer
 		LDB	#4
@@ -120,15 +129,15 @@ For another example, to pull 4 bytes of the Am9511's data register stack:
 
 This 'two instructions to read' method may not be the most elegant for those used to programming the Am9511 on an 8080, but was necessary due to the timing considerations discussed above. An alternative, if one wants to design their own board, is to use a PIA, discussed below.
 
-Additionally, when doing a write, the Am9511-4 and Am9511-1 needs the write line to complete 30ns (60ns for the Am9511) before the chip select is finished. Since both signals are normally derived from the same clock on the Color Computer, they normally finish at the same time. As such, a one-shot multivibrator 74LS123 is used; the write signal triggers the one shot that provides the needed 100ns pulse (150ns on the Am9511), leaving enough time in the clock cycle to meet valid data bus and chip select timing requirements.
+Additionally, when doing a write, the Am9511-4 and Am9511-1 needs the write line to complete 30 ns (60 ns for the Am9511) before the chip select is finished. Since both signals are normally derived from the same clock on the Color Computer, they normally finish at the same time. As such, a one-shot multivibrator 74LS123 is used; the write signal triggers the one shot that provides the needed 100 ns pulse (150 ns on the Am9511), leaving enough time in the clock cycle to meet valid data bus and chip select timing requirements. See the below section 'Write Timing' for additional detail.
 
 ### But I don't want to HALT the CPU during a read!
 
-A jumper is included on the board design so the HALT behavior can be disabled. If disabled, then the programmer will need to account for the time it takes for chip transfer to complete instead by calculating software instruction timing. 
+Jumper JP1 is included on the board design so the HALT behavior can be disabled. If disabled, then the programmer will need to account for the time it takes for chip transfer to complete instead by calculating software instruction timing. 
 
 On a 6809 CoCo running at .89 Mhz this is not an issue and the jumper can be removed to disable the HALT behavior; a LD instruction takes three cycles so the time for the two intervening clock cycles between the load cycles of the LD instructions is greater than the required 2840 ns.
 
-However, if the CoCo3 double speed poke is done or the 6809 processor has been replaced with a 6309 processor running in native mode (so LD instructions only take 2 cycles), there might not be enough time for the transfer to complete, and the programmer will need to add in NOP instructions or perform other work to obtain the necessary timing.
+However, when running without the jumper and the CoCo3 double speed poke or a 6309 processor running in native mode (so LD instructions only take 2 cycles), there might not be enough time for the transfer to complete, and the programmer will need to add in NOP instructions or perform other work to obtain the necessary timing between the two load instructions.
 
 ## Alternative Implementation Methods
 
@@ -144,21 +153,29 @@ Here are a few examples:
 
 * [Micro! Aug 1981 MICROCRUNCH: An Ultra-fast Arithmetic Computing System](https://archive.org/details/sim_micro_1981-08_39/page/n7), Page 7. This one uses the two flip-flops in a 74LS76 chip like a PIA to control the R/W\* and C/D\* lines. Part 2 is in [Micro! Sep 1981](https://archive.org/details/sim_micro_1981-09_40/page/82/mode/2up), Page 83. This one uses a 74123 for writing timing much like this board.
 
+## Providing 12 Volts
+
+Use Jumper JP2 to select the source of 12 volts needed for the Am9511.
+
+The original Color Computer and many Multi-Pak Interfaces (MPIs) provide +12v on the second cartridge pin. However, the CoCo 2, Coco 3, and many third-paty MPIs do not provide 12 volts on this pin, so a 5v to 12v boosting circuit is included on the board design. Set JP2 to 'Circuit' to use this circuit.
+
+But if one has a setup that provides +12v to the cartridge and wants to use this source instead, set JP2 to 'Cart.' One can then also eliminate C3, C16, C17, L1, D1, R5, R6, R7, and U3.
+
 ## Chip Considerations
 
 The markings on the board and the bill of materials is for the Am9511-4DC running at 4Mhz. If one uses a 2Mhz or 3Mhz Am9511 instead, make these adjustments:
 
 Am9511:
-* C16 150pf
-* R2 2.2kohm
 * X1 2Mhz Oscillator
 
 Am9511-1:
-* C16 100pf (no change from board)
-* R2 2kohm (no change from board)
 * X1 3Mhz Oscillator
 
-For C16 and R2, if you don't have these exact values on hand, one can use a larger capacitor with a smaller resistor (and visa-versa) to get the write timing needed (150ns for Am9511, 100ns for the Am9511-1). See the 74LS123 datasheet and [Texas Instruments Designing With the SN54/74LS123](https://www.ti.com/lit/an/sdla006a/sdla006a.pdf) Page 3 for guidance.
+## Tuning Write Timing
+
+For C15 and R2, if one doesn't have the exact values on hand, one can use a larger capacitor with a smaller resistor (and visa-versa). One is trying to get the pulse to be long enough to meet the TDW (Data Bus Stable to WR\* High Set up Time) requirement but also short enough to allow the Am9511's TWCD (WR\* High to CS\* High Hold Time) requirement in the remaining CPU clock cycle. The range for the ideal pulse length is between 150 and 184 ns as this gives enough TDW time for the slower Am9511 but also leaves enough remaining TWCD time with the Color Computer's double speed poke. There is more flexibility if one has the Am9511-1 or Am9511-4; a pulse time between 100 and 214 ns will work, and even more flexibility if using the Am9511-1 or Am9511-4 without the double speed poke as the pulse can be anywhere between 100 and 458 ns.
+
+See the 74LS123 datasheet and [Texas Instruments Designing With the SN54/74LS123](https://www.ti.com/lit/an/sdla006a/sdla006a.pdf) Page 3 for guidance on choosing the capacitor and resistor values. If one has a picky AM9511 one might have to check the signal timings with an oscilloscope or logic analyzer and adjust C15 and/or R2.
 
 ## More Info
 
@@ -172,6 +189,5 @@ Links:
 
 ## Errata
 
-None at this time.
-
+Version 1.0 of the board has several flaws and should not be used.
 
