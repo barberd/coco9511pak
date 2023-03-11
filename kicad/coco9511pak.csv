@@ -1,11 +1,3 @@
-"Source:","/home/barberd/work/coco9511pak/kicad/coco9511pak.kicad_sch"
-"Date:","Sat 11 Mar 2023 12:22:35 PM EST"
-"Tool:","Eeschema 6.0.9-8da3e8f707~117~ubuntu20.04.1"
-"Generator:","/usr/share/kicad/plugins/bom_csv_grouped_by_value.py"
-"Component Count:","43"
-
-"Individual Components:"
-
 "Item","Qty","Reference(s)","Value","LibPart","Footprint","Datasheet"
 "","","C1",".1uf","Device:C","Capacitor_THT:C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal","~"
 "","","C2",".1uf","Device:C","Capacitor_THT:C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal","~"
