@@ -34,7 +34,7 @@ For example, a hardware floating point divide can take up to 184 clock cycles (9
 
 This is often used for technical or scientific uses where very fast arithmetic is desirable. For example, see [NASA Technical Memorandum TM-86517](https://archive.org/details/NASA_NTRS_Archive_19850026198/page/n1/mode/2up) from July 1985 for a description on how NASA used these chips for controlling structural vibrations, and needed all the computations done within 20ms. They actually put four Am9511s in parallel! (Note the 6502 processor used in that memo has the opposite BCC/BCS behavior compared to the 6809; keep this in mind when reviewing Figure 6 on page 15; the 'BCS BA4' should be 'BCC BA4' when transcoding to the CoCo.)
 
-A quick benchmark executing in [Basic](Basic%Patch/) that loops over Y=(TAN(ATN(SQR(Y\*Y)))+1)/Y 368 times gets these results:
+A quick benchmark executing in [Basic](Basic%20Patch/) that loops over Y=(TAN(ATN(SQR(Y\*Y)))+1)/Y 368 times gets these results:
 
  * Stock CoCo3: 66.08 seconds
  * CoCo3 with "Poke 65497,0" double speed poke: 32.86 seconds
