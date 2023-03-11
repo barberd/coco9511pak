@@ -5744,6 +5744,22 @@
     (pin "1" (uuid 876ec3d1-1051-4e8a-89d5-6bdb1df42747))
   )
 
+  (symbol (lib_id "power:VCC") (at 285.75 58.42 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (uuid 0edca048-b9f6-44ca-83ea-9f9cd28f25c8)
+    (property "Reference" "#PWR?" (id 0) (at 285.75 62.23 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "VCC" (id 1) (at 285.75 53.34 0))
+    (property "Footprint" "" (id 2) (at 285.75 58.42 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (id 3) (at 285.75 58.42 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 2a5371a1-d78c-4ab0-9937-bddd2babbda5))
+  )
+
   (symbol (lib_id "power:GND") (at 35.56 129.54 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 100301ea-33cd-4337-a984-9eda5fa87d04)
@@ -7808,6 +7824,9 @@
     )
     (path "/0deefb14-dd67-4288-9770-4255f9c2cd81"
       (reference "#PWR0113") (unit 1) (value "Gnd") (footprint "")
+    )
+    (path "/0edca048-b9f6-44ca-83ea-9f9cd28f25c8"
+      (reference "#PWR?") (unit 1) (value "VCC") (footprint "")
     )
     (path "/1ff809bd-80e3-46ff-b7e6-5fef8477146c"
       (reference "C1") (unit 1) (value ".1uf") (footprint "Capacitor_THT:C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal")
