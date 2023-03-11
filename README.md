@@ -159,7 +159,7 @@ Use Jumper JP2 to select the source of 12 volts needed for the Am9511.
 
 The original Color Computer and many Multi-Pak Interfaces (MPIs) provide +12v on the second cartridge pin. However, the CoCo 2, Coco 3, and many third-paty MPIs do not provide 12 volts on this pin, so a 5v to 12v boosting circuit is included on the board design. Set JP2 to 'Circuit' to use this circuit.
 
-But if one has a setup that provides +12v to the cartridge and wants to use this source instead, set JP2 to 'Cart.' One can then also eliminate C3, C16, C17, L1, D1, R5, R6, R7, and U3. U3 can be rather expensive.
+But if one has a setup that provides +12v to the cartridge and wants to use this source instead, set JP2 to 'Cart.' One can then also eliminate C3, C16, C17, L1, D1, R5, R6, R7, and U3. The LT1373 (U3) and similar switching regulators can be expensive.
 
 ## Chip Considerations
 
