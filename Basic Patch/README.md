@@ -27,11 +27,11 @@ The code is copyright 2023 by Don Barber. The software is open source, distribut
 
 The 6809 processor used on the Color Computer does not have hardware support for floating point operations, and only has arithmetic functions for 8 and 16 bit addition, 8 and 16 bit subtraction, and 8 bit multiply. Division, exponentiation, trigonometric functions, square root, and logarithms are done in software.
 
-Performing these tasks in software can be time intensive. As such, arithmetic processing units such as the Am9511 can be interfaced to the computer to offload these tasks, speeding up processing.
+Performing these tasks in software can be time intensive. Arithmetic processing units such as the Am9511 can be interfaced to the computer to offload these tasks, speeding up processing.
 
-By patching BASIC to use the CoCo Am9511 pak, developers and operators can access the additional speed of the Am9511 with no change to their existing BASIC programs.
+By patching BASIC to use the CoCo Am9511 pak, developers and operators can access the additional speed of the Am9511 with no change to their existing BASIC programs or the need to learn assembly to use the Am9511.
 
-Additionally, the patch includes 4 new functions not present. These are arccos (ACOS), arcsin (ARCSIN), base 10 log (LG10), and pi (APUPI).
+Additionally, the patch includes 4 new functions not present in the Basic ROMs. These are arccos (ACOS), arcsin (ARCSIN), base 10 log (LG10), and pi (APUPI).
 
 ## Tradeoffs
 
@@ -41,7 +41,7 @@ Conversely, the Am9511 uses 4 bytes to store floating point numbers. It uses 24 
 
 So, the native software format provides more precision and greater range, but is also slower. The Am9511 has less precision and range, but is still good enough for almost all use cases, and is much faster.
 
-Use of a number in BASIC that does not fit within the Am9511's range results in an OV (overflow) error when sending an operation to the Am9511. Time is also spent in converting values between systems when writing to or reading from the Am9511, but this overhead is dwarfed by the time saved by the APU processing.
+Use of a number in BASIC that does not fit within the Am9511's range results in an OV (overflow) error when sending an operation to the Am9511. Time is also spent in converting values between systems when writing to or reading from the Am9511, but this overhead is far less than the time saved by the APU processing.
 
 ## Benchmarking
 
@@ -52,7 +52,7 @@ Here are the results when I run them:
  * Stock CoCo3: 66.08 seconds
  * CoCo3 with "Poke 65497,0" double speed poke: 32.86 seconds
  * CoCo3 with Am9511-4 and Basic Patches: 5.95 seconds
- * CoCo3 with Am9511-4, Basic Patches, and Double Speek Poke: 3.5 seconds
+ * CoCo3 with Am9511-4, Basic Patches, and Double Speed Poke: 3.5 seconds
 
 As such, one can expect a 10x performance increase in floating point operatings using this Basic patch.
 
