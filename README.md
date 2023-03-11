@@ -41,7 +41,7 @@ A quick benchmark executing in [Basic](Basic%20Patch/) that loops over Y=(TAN(AT
  * CoCo3 with Am9511-4 and Basic Patches: 5.95 seconds
  * CoCo3 with Am9511-4, Basic Patches, and Double Speek Poke: 3.5 seconds
 
-So, use of the Am9511 results in about 10x speed in floating-point operations when compared to the algorithms in the built-in Basic ROM. Please note this is linear, as the CPU waits for the result while the Am9511 is processing. A program that does other work in parallel could see even faster results.
+So, use of the Am9511 results in about 10x speed in floating-point operations when compared to the algorithms in the built-in Basic ROM. Please note this is linear, as the CPU waits for the result while the Am9511 is processing. A program that does other work in parallel could see even faster results. Compiled code or code written in machine language should see even larger increases; somewhere between 10x and 70x performance depending upon the activity.
 
 ### More on the APU
 
