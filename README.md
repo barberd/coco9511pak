@@ -66,7 +66,7 @@ For example, to perform a float multiply:
 
 	 	LDX	#fpbuf1+4		End of Floating Point Buffer 1
 		LDY	#fpbuf2+4		End of Floating Point Buffer 2
-		LDY	#result			Result Buffer
+		LDU	#result			Result Buffer
 		LDB	#4
 	loop1	LDA	,-X			Push Buffer 1 contents into chip
 		STA	$FF70
@@ -157,7 +157,7 @@ Here are a few examples:
 
 Use Jumper JP2 to select the source of 12 volts needed for the Am9511.
 
-The original Color Computer and many Multi-Pak Interfaces (MPIs) provide +12v on the second cartridge pin. However, the CoCo 2, Coco 3, and many third-paty MPIs do not provide 12 volts on this pin, so a 5v to 12v boosting circuit is included on the board design. Set JP2 to 'Circuit' to use this circuit.
+The original Color Computer and many Multi-Pak Interfaces (MPIs) provide +12v on the second cartridge pin. However, the CoCo 2, Coco 3, and many third-party MPIs do not provide 12 volts on this pin, so a 5v to 12v boosting circuit is included on the board design. Set JP2 to 'Circuit' to use this circuit.
 
 But if one has a setup that provides +12v to the cartridge and wants to use this source instead, set JP2 to 'Cart.' One can then also eliminate C3, C16, C17, L1, D1, R5, R6, R7, and U3. The LT1373 (U3) and similar switching regulators can be expensive.
 
@@ -170,6 +170,21 @@ Am9511:
 
 Am9511-1:
 * X1 3Mhz Oscillator
+
+## Interrupts
+
+To trigger an interrupt when a command is complete, issue the command to the Am9511 with bit 7 high. For example, use $93 for FDIV instead of $13. See the Am9511 datasheet for details. Using interrupts enables programs go on to other work and return once the command is complete without needing to poll for a status change.
+
+Commands with bit 7 high will cause the Am9511's SVREQ pin to go high when complete, which causes a 74LS05 (an open-collector NOT gate) to pull the cartridge's pin 8 (CART\*) low. This pin will stay low until the service request is acknowledged by reading from the chip. When PIA1 is configured to do so, a fast interrupt request is sent to the CPU when CART\* goes low.
+
+To configure the PIA1 to do this, enable fast interrupts and configure it to trigger on a falling edge, like so:
+
+		LDA     $FF23		;load PIA1 Side B Control Register
+                ORA     #$01            ;set bit 0 to 1 to enable cart firq
+                ANDA    #$FD            ;set bit 1 to 0 to trigger on falling-edge
+                STA     $FF23		;store in PIA1 Side B Control Register
+
+Hook in the interrupt handler at $010F (and/or $FEF4 on the CoCo3) as one would any other FIRQ handler. Make sure your handler performs a SVACK through a chip read.
 
 ## Tuning Write Timing
 
