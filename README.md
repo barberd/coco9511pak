@@ -107,16 +107,16 @@ For example, to perform a float multiply:
 
 ### Interrupts
 
-To trigger an interrupt when a command is complete, issue the command to the Am9511 with bit 7 high. For example, use $93 for FDIV instead of $13. See the Am9511 datasheet for details. Using interrupts enables programs go on to other work and return once the command is complete without needing to poll for a status change.
+Optionally, to trigger an interrupt when a command is complete, issue the command to the Am9511 with bit 7 high. For example, use $93 for FDIV instead of $13. See the Am9511 datasheet for details. Using interrupts enables programs go on to other work and return once the command is complete without needing to poll for a status change.
 
 Commands with bit 7 high will cause the Am9511's SVREQ pin to go high when complete, which causes a 74LS05 (an open-collector NOT gate) to pull the cartridge's pin 8 (CART\*) low. This pin will stay low until the service request is acknowledged by reading from the chip. When PIA1 is configured to do so, a fast interrupt request is sent to the CPU when CART\* goes low.
 
 To configure the PIA1 to do this, enable fast interrupts and configure it to trigger on a falling edge, like so:
 
-                LDA     $FF23		;load PIA1 Side B Control Register
+                LDA     $FF23           ;load PIA1 Side B Control Register
                 ORA     #$01            ;set bit 0 to 1 to enable cart firq
                 ANDA    #$FD            ;set bit 1 to 0 to trigger on falling-edge
-                STA     $FF23		;store in PIA1 Side B Control Register
+                STA     $FF23           ;store in PIA1 Side B Control Register
 
 Hook in the interrupt handler at $010F (and/or $FEF4 on the CoCo3) as one would any other FIRQ handler. Make sure your handler performs a SVACK through a chip read.
 
