@@ -51,7 +51,11 @@ The APU may also be referred to as a floating-point unit (FPU) or a math coproce
 
 ## Using the Board
 
+### Configuration
+
 Set the 6 dip switches (SW1) for the desired base IO address. These correspond to address lines A2 through A7. The default is $FF70 (switches set to 011100), which generally should not have a conflict unless one has configured another hardware device with a conflicting IO address. See [here](https://www.cocopedia.com/wiki/index.php/External_Hardware_IO_Address_Map) for a list of known IO hardware addresses.
+
+### Overview
 
 The four addresses used correspond to different registers on the Am9511 and board. For example, if given base address of $FF70:
 
@@ -61,6 +65,8 @@ The four addresses used correspond to different registers on the Am9511 and boar
   * $FF73 Mirror of Latch Register
 
 Read the [Am9511 Datasheet](docs/9511%20Datasheet.pdf?raw=true), [Algorithm Details for the Am9511 Arithmetic Processing Unit](docs/The%20Am9511%20Arithmetic%20Processing%20Unit.pdf?raw=true), and the [Am9511A/Am9512 Floating Point Processor Manual](docs/Am9511A-9512FP_Processor_Manual.pdf?raw=true) for how to use the chip. The only adjustment for this board is that instead of reading directly from the chip, a two-step read is needed. The first will read the data into a latch, and a second read will load the real data into the CPU. See the Implementation Details below for information on why this is needed.
+
+### Examples
 
 For example, to perform a float multiply:
 
@@ -98,6 +104,22 @@ For example, to perform a float multiply:
 		STA	,U+			Store into result buffer
 		DECB
 		BNE	loop4
+
+### Interrupts
+
+To trigger an interrupt when a command is complete, issue the command to the Am9511 with bit 7 high. For example, use $93 for FDIV instead of $13. See the Am9511 datasheet for details. Using interrupts enables programs go on to other work and return once the command is complete without needing to poll for a status change.
+
+Commands with bit 7 high will cause the Am9511's SVREQ pin to go high when complete, which causes a 74LS05 (an open-collector NOT gate) to pull the cartridge's pin 8 (CART\*) low. This pin will stay low until the service request is acknowledged by reading from the chip. When PIA1 is configured to do so, a fast interrupt request is sent to the CPU when CART\* goes low.
+
+To configure the PIA1 to do this, enable fast interrupts and configure it to trigger on a falling edge, like so:
+
+                LDA     $FF23		;load PIA1 Side B Control Register
+                ORA     #$01            ;set bit 0 to 1 to enable cart firq
+                ANDA    #$FD            ;set bit 1 to 0 to trigger on falling-edge
+                STA     $FF23		;store in PIA1 Side B Control Register
+
+Hook in the interrupt handler at $010F (and/or $FEF4 on the CoCo3) as one would any other FIRQ handler. Make sure your handler performs a SVACK through a chip read.
+
 	
 
 ## Implementation Details
@@ -170,21 +192,6 @@ Am9511:
 
 Am9511-1:
 * X1 3Mhz Oscillator
-
-## Interrupts
-
-To trigger an interrupt when a command is complete, issue the command to the Am9511 with bit 7 high. For example, use $93 for FDIV instead of $13. See the Am9511 datasheet for details. Using interrupts enables programs go on to other work and return once the command is complete without needing to poll for a status change.
-
-Commands with bit 7 high will cause the Am9511's SVREQ pin to go high when complete, which causes a 74LS05 (an open-collector NOT gate) to pull the cartridge's pin 8 (CART\*) low. This pin will stay low until the service request is acknowledged by reading from the chip. When PIA1 is configured to do so, a fast interrupt request is sent to the CPU when CART\* goes low.
-
-To configure the PIA1 to do this, enable fast interrupts and configure it to trigger on a falling edge, like so:
-
-		LDA     $FF23		;load PIA1 Side B Control Register
-                ORA     #$01            ;set bit 0 to 1 to enable cart firq
-                ANDA    #$FD            ;set bit 1 to 0 to trigger on falling-edge
-                STA     $FF23		;store in PIA1 Side B Control Register
-
-Hook in the interrupt handler at $010F (and/or $FEF4 on the CoCo3) as one would any other FIRQ handler. Make sure your handler performs a SVACK through a chip read.
 
 ## Tuning Write Timing
 
