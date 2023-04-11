@@ -218,6 +218,8 @@ Links:
 ## Errata
 
 Version 1.0 of the board has several flaws and should not be used.
+
 Version 1.1 of the board was missing two silkscreen labels (the 74LS08 and the 74LS244).
+
 Version 1.2 switched the locations of the '0' and '1' labels on SW1 compared to earlier versions. This is arbitrary and only done because this way allows most switches on the market to be installed with their printing 'up' instead of 'down.'
 
