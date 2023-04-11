@@ -55,6 +55,12 @@ The APU may also be referred to as a floating-point unit (FPU) or a math coproce
 
 Set the 6 dip switches (SW1) for the desired base IO address. These correspond to address lines A2 through A7. The default is $FF70 (switches set to 011100), which generally should not have a conflict unless one has configured another hardware device with a conflicting IO address. See [here](https://www.cocopedia.com/wiki/index.php/External_Hardware_IO_Address_Map) for a list of known IO hardware addresses.
 
+The orientation of SW1 matters; it should be that the 'circuit is closed' or 'on' direction points to the 0 side. This is because the 74LS682 chip works by defaulting to '1' unless pulled to ground to make it a '0'. This simplifies and lowers the cost of the address selection circuit but also results in the non-intuitive use of 'on' to get a '0' instead of a '1'.
+
+As such, make sure to orient the switch to match 'on' to face the same direction as the '0' label. If one gets the switch upside down, not a big deal, the switch will just operate in reverse from the silkscreened labels.
+
+Board versions 1.2 and later reversed the earlier locations of the '0' and '1' labels as most (but not all) switches on the market were printed in such a way they had to be installed upside down. This is completely arbitrary and only done for aesthetic reasons.
+
 ### Overview
 
 The four addresses used correspond to different registers on the Am9511 and board. For example, if given base address of $FF70:
@@ -118,7 +124,7 @@ To configure the PIA1 to do this, enable fast interrupts and configure it to tri
                 ANDA    #$FD            ;set bit 1 to 0 to trigger on falling-edge
                 STA     $FF23           ;store in PIA1 Side B Control Register
 
-Hook in the interrupt handler at $010F (and/or $FEF4 on the CoCo3) as one would any other FIRQ handler. Make sure your handler performs a SVACK through a chip read.
+Hook in the interrupt handler at $010F (and/or $FEF4 on the CoCo3) as one would any other FIRQ handler. Make sure the interrupt handler performs a SVACK through a chip read.
 
 	
 
@@ -212,4 +218,6 @@ Links:
 ## Errata
 
 Version 1.0 of the board has several flaws and should not be used.
+Version 1.1 of the board was missing two silkscreen labels (the 74LS08 and the 74LS244).
+Version 1.2 switched the locations of the '0' and '1' labels on SW1 compared to earlier versions. This is arbitrary and only done because this way allows most switches on the market to be installed with their printing 'up' instead of 'down.'
 
