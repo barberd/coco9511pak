@@ -189,7 +189,7 @@ The original Color Computer and many Multi-Pak Interfaces (MPIs) provide +12v on
 
 But if one has a setup that provides +12v to the cartridge and wants to use this source instead, set JP2 to 'Cart.' One can then also eliminate C3, C16, C17, L1, D1, R5, R6, R7, and U3. The LT1373 (U3) and similar switching regulators can be expensive.
 
-Alternatively, one could wire in an external 12v supply, such as a barrel connector to plug in a 12v wall transformer. Connect the +12v to a trace connected to the JP2 jumper, such as the positive side of C17, D1, or R5. Connect ground to any ground connection, such as U3's pin 5 or 6.
+Alternatively, one could wire in an external 12v supply, such as a barrel connector to plug in a 12v wall transformer. Connect the +12v to a trace connected to the JP2 jumper, such as the positive side of C17, D1, or R5. Connect ground to any ground connection, such as U3's pin 5 or 6. According to the Am9511's datasheet, a supply current of 50mA is typical for the 12v input but may pull up to 90mA.
 
 ## Chip Considerations
 
