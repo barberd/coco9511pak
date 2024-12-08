@@ -4,7 +4,7 @@
 
 ; This code will patch Super Extended Basic to use the AMD 9511 
 ; Arithmetic Processing Unit for several of its float functions, including: 
-; *, /, ^, SIN, ATN, COS, TAN, EXP, FIX, LOG, and SQR.
+; *, /, ^, SIN, ATN, COS, TAN, EXP, LOG, and SQR.
 ; Additionally, four new functions have been added: ACOS, ARCSIN, LG10, and APUPI.
 
 ; A CoCo 9511 Pak is required; see the distribution URL above for 
@@ -38,7 +38,15 @@ APUSR           EQU     $FF71           AM9511A Status Register - loads stored i
 APUCR           EQU     APUSR           AM9511A Command Register
 APURR		EQU	$FF72		Real read register
 
+; Note: Calls to basic errors will reset the stack
+; so it is probably ok that we don't clean up before aborting
 OVERROR	SET	$BA92
+FCERROR	SET	$B44A
+DZERROR	SET	$BC06
+PIXMASK	SET	$92DD
+
+CHARAC	SET	$0001			; temp location
+RSTFLG	SET	$0071
 
 FP0EXP	SET	$004F
 FPA0	SET	$0050
@@ -54,12 +62,9 @@ PATCH2	SET	$B8D4
 PATCH3	SET	$B7F3
 PATCH5	SET	$816C
 
-TXTTAB	SET	$0019
 COMVEC	SET	$0120
 
-		org	$2600		; Standard TXTTAB basic program 
-					; location on coco3. Will update TXTTAB
-					; to make room for this code.
+		org	$FB00
 
 ;format FPA to APU
 FP0TOAPU	LDX	#FP0EXP
@@ -102,7 +107,7 @@ mantissaloop:	LDA	,-Y
 		LBCS	OVERROR		Overflow error
 donemantissa:	CLR	4,X		clear last byte of mantissa
 		;done with mantissa, now adjust exponent and bring in sign
-		;check for exponent > 63 or < -63 then overflow or underflow
+		;check for exponent > 63 or < -64 then overflow or underflow
 		LDA	,X
 		CMPA	#$C0
 		LBCC	OVERROR		Overflow error
@@ -126,7 +131,9 @@ storeloop:	LDA	,-X
 		BNE	storeloop
 		PULS	A,PC
 
-APUCOMMAND	STA	APUCR
+APUCOMMAND	STA	CHARAC			; save copy of flag (in SR bit) in a scratch location.
+		ANDA	#$7F			; strip off SR bit.
+sendcmd		STA	APUCR
 		#JMP	skip			for debugging, bypass chip
 						;this results in returning the
 						;same number, but tests the
@@ -135,7 +142,7 @@ APUCOMMAND	STA	APUCR
 apuwaitloop:	LDA	APUSR
 		LDA	APURR
 		BMI	apuwaitloop		loop until done
-		BITA	#$1E
+		ANDA	#$1E
 		BNE	apuerrorhandler
 ;now done with command so 
 ;pull float out of APU and format to FPA
@@ -164,24 +171,31 @@ donemsign:	ANDA	#$7F		;convert exponent
 		CMPA	#$40
 		BCC	nobias		Add $80 if positive
 		ORA	#$80
-nobias:		STA	FP0EXP	
-		RTS
+nobias:		STA	FP0EXP
+
+		LDA	CHARAC		; check for special case of (-A) ^ X where INT(X) and odd
+		BPL	1$		; (zero result is handled above, which we can ignore).
+		COM	FP0SGN		; if so, flip resulting sign (from positive to negative).
+1$		RTS
+
 apuerrorhandler:
-		BITA	#$02		XX01 error
-		LBNE	OVERROR		OV ERROR
-		BITA	#$10		1000 error
-		LBNE	$BC06		/0 ERROR
-		BITA	#$08		0100 error
-		LBNE	$B44A		FC ERROR (sqr of negative)
-		BITA	#$18		1100 error
-		LBNE	$BA92		OV ERROR
-		;underflow is only error left
-		;so just round down to 0 and return
-		LDX	#FP0EXP
+		TFR	A,B
+		ANDB	#$06
+		CMPB	#$04		;XX10 error (Underflow) - only non-fatal error
+		BEQ	retzero
+		CMPB	#$02		;XX01 error (Overflow)
+		LBEQ	OVERROR
+		CMPA	#$10		;1000 error (division by zero)
+		LBEQ	DZERROR
+		CMPA	#$18		;1100 error (arg too large)
+		LBEQ	OVERROR		
+		LBRA	FCERROR		;Else 0100 error (sqr of negative) or some undefined value
+
+retzero:	LDX	#FP0EXP		;silently just round down to 0 and return
 		LDA	#5
-errzeroloop:	CLR	,X+
+1$		CLR	,X+
 		DECA
-		BNE	errzeroloop
+		BNE	1$
 		RTS
 
 APUFUNCTION
@@ -209,9 +223,6 @@ LOG		LDA	#$09
 EXP		LDA	#$0A
 		BRA	APUFUNCTION
 
-PWR		LDA	#$0B			issue PWR command
-		BRA	sendtwovars
-
 PI		LDA	#$1A
 		LBRA	APUCOMMAND
 
@@ -223,15 +234,90 @@ sendtwovars:	LDX	#FP1EXP			first exponent base
 		LBSR	UNPACKEDTOAPU
 		BRA	APUFUNCTION
 
-FIX		LDA	#$1E			FIXD command to
-		LBSR	FP0TOAPU                convert to 32-bit fixed point
-		STA	APUCR
-fixwaitloop:	LDA	APUSR
-		LDA	APURR
-		BMI	fixwaitloop		loop until done
-		LDA	#$1C                    FLTD command to convert
-		LBRA	APUCOMMAND              back to float and return
-		
+; Compute: A^X, where X -> FP0, A -> FP1
+; Equivalent to: e ^ (X * LN(A))
+; This won't work when A is 0, or when A < 0 AND X is an integer
+; (e.g. 0^X should return 0 and -2 ^ 2  should return 4).
+; also, due to special case code, we need to explictly handle when X is 0.
+; handle these special cases in a similar way as extended basic
+; for compatibility with existing program behaviors.
+PWR
+		LDA	FP0EXP			; first check if X is 0
+		BEQ	EXP			; then return e^0, which should be 1 (for all A).
+		LDA	FP1EXP			; check if A is 0, since LN(0) isn't defined.
+		BEQ	retzero			; 0^X should be 0, for all X except 0
+
+		LDA	FP1SGN			; if A > 0, we can computer PWR normally.
+		BEQ	DOPWR
+						; ok, A < 0, now check if X is an integer
+						; if X isn't an INT, return FC ERROR (since A < 0)
+		LDA	FP0EXP
+		SUBA	#$81
+		LBCS	FCERROR			; if ABS(X) < 1.0; then return FC ERROR
+		CLRB				; clear LSB flag in case we branch
+		CMPA	#$20			; if decimal point > 32bits (exp >= $A1) then
+		BCC	CHKLSB			; X must be an int (and implicitly even).
+						; If exp $A0, then X still is always an int, but we need
+						; to check LSB for even/odd.
+						; rA now has the bit# of the LSB in the mantissa
+						; (e.g. between 0 and 0x1f) counting from MSB to LSB.
+
+						; Convert rA to the offset and masks we
+						; need to check if any bits are set in
+						; any fractional part (right of the decimal point)
+						; in the mantissa.
+
+		TFR	A,B			; save an extra copy of rA in rB
+
+		LDX	#FPA0
+		LSRB				; set rX to the byte in the mantissa
+		LSRB				; containing the decimal point
+		LSRB
+		ABX
+
+		ANDA	#$7			; calc mask of bits to the right of decimal pt
+		LDU	#PIXMASK		; use 2-color bit mask lookup table
+		LDB	A,U
+		DECB
+		ANDB	,X
+		LBNE	FCERROR			; if any bits are 1, then X isn't an int
+
+		LDB	A,U			; get mask of LSB
+		ANDB	,X+			; save LSB in rB for later, advance rX to next mant byte
+
+		BRA	2$			; finally, check rest of mantissa (whole bytes) for zero
+1$		LDA	,X+
+		LBNE	FCERROR			; if any bits are 1, then X isn't an int
+2$		CMPX	#FP0SGN
+		BNE	1$
+
+; rB should contain saved LSB for the test below.
+;
+; Now, while we know X is an int, it still may requires > 24 bits.
+; We could check FPA0+3 (for zero), and do something
+; like return OVERROR...
+;
+; However, this is likely pointless as an exponent this
+; large (positive or negative) will almost certainly
+; underflow the result to 0 or overflow.  Even with
+; 1^X, LN(1) isn't precisely 0 and any exp (> 31) will
+; overflow the APU's precision (1^6e8 for example).
+; So to avoid these problems, ignore the fact that
+; the integer exponent may get truncated and let apu error
+; handler return the right result.  This also avoids
+; any potential inconsistency in handling the positive and negative
+; argument cases differently.
+
+CHKLSB						; Now check saved odd/even (LSB) to determine final result sign
+		CLR	FP1SGN			; First, force A positive before sending to APU
+		LDA	#($B|$80)		; if X is odd (rB != 0), need to flip sign back after PWR is computed
+						; Hack: use SR bit as a flag since we aren't using it.
+		TSTB				; if X is even, no need to restore sign, can just calc PWR
+		BNE	sendtwovars		; issue special PWR command and flip sign.
+DOPWR
+		LDA	#$0B			; issue normal PWR command
+		BRA	sendtwovars
+
 #Patch into crunch/uncrunch/process same as super extended basic patch 2 and 3, and 5. See ALINK2 ALINK3 and ALINK5 in Super Extended Basic Unravelled
 
 ;crunches into tokens
@@ -298,7 +384,7 @@ amjumptable:	FDB	ACOS		AE
 		FDB	PI		B1
 
 start:
-		STA	$FFDF		make sure coco3 is in RAM mode
+		CLR	RSTFLG		; due to code in high memory, reset can't recover
 
 		;patch super extended basic for new secondary functions
 		;ACOS,ASIN,LOG10, and PI.
@@ -332,19 +418,12 @@ start:
 		STD	,X++
 		LDD	#EXP
 		STD	,X++
-		LDD	#FIX
-		STD	,X++
+		LEAX	2,X		skip over FIX
 		LDD	#LOG
 		STD	,X++
 		LEAX	2,X		skip over POS
 		LDD	#SQR
 		STD	,X
-
-		;set new basic location to start at this code's initialization
-		;routine since thats no longer needed
-		LDX	#start+1
-		STX	TXTTAB		new beginning of basic program area
-		JMP	$96EC		clear vars and do a NEW
+		RTS
 
 		end	start
-

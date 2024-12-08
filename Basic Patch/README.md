@@ -2,7 +2,7 @@
 
 ## Description
 
-This code will patch CoCo3's Super Extended Basic to use the CoCo Am9511 Pak (open source hardware design available at https://github.com/barberd/coco9511pak) and its Arithmetic Processing Unit for several of its float functions, including: \*, /, ^, SIN, ATN, COS, TAN, EXP, FIX, LOG, and SQR.
+This code will patch CoCo3's Super Extended Basic to use the CoCo Am9511 Pak (open source hardware design available at https://github.com/barberd/coco9511pak) and its Arithmetic Processing Unit for several of its float functions, including: \*, /, ^, SIN, ATN, COS, TAN, EXP, LOG, and SQR.
 Additionally, four new functions have been added: ACOS, ARCSIN, LG10, and APUPI.
 
 ## How to use
@@ -21,7 +21,7 @@ This will load the patch.
 
 Source maintained at [https://github.com/barberd/coco9511pak/](https://github.com/barberd/coco9511pak/).
 
-The code is copyright 2023 by Don Barber. The software is open source, distributed via the GNU GPL version 3 license. Please see the COPYING file for details.
+The code is copyright by Don Barber. The software is open source, distributed via the GNU GPL version 3 license. Please see the COPYING file for details.
 
 ## Why
 
@@ -68,6 +68,14 @@ APUPI was used for returning pi instead of PI as many programmers choose to use 
 
 In the event the chip returns an underflow, the number returned is simply rounded down to 0 instead of returning an error; this is the same behavior as BASIC.
 
+FIX is available on the Am9511 but not implemented in this patch.
+
+## Test Programs
+
+ERRTEST.BAS validates error handling
+
+PWRTEST.BAS validates some of the PWR function test cases
+
 ## Color Computer 3 Only?
 
 Simply put, I wrote this for the CoCo 3 as thats what I have. But it should be possible to modify for the CoCo 1 or 2.
@@ -83,4 +91,8 @@ Make CoCo 1 and CoCo 2 patches.
 Modify the entire BASIC ROM so the APU floating point format is used internal to BASIC, so conversion to and from the APU is not needed.
 
 Do some tests to see if it also makes sense to perform addition and subtraction on the Am9511. Assumption is that multi-byte addition and subtraction in software is still faster when including the overhead required in communicating with the Am9511, as this is generally the case on other machines, but this has not been tested empirically.
+
+## Credits
+
+George Hines submitted the ERRTEST.BAS and PWRTEST.BAS test programs and updated the bas9511.asm program to fix a few issues, see pull request comment for details.
 
